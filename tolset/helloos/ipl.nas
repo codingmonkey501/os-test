@@ -79,6 +79,10 @@ next:							; read 17 sectors
 		CMP		CH,CYLS
 		JB		readloop
 
+; write CYLS into [0x0ff0] and jump to execute
+		MOV		[0x0ff0],CH
+		JMP		0xc200
+
 fin:
 		HLT
 		JMP		fin

@@ -1,13 +1,13 @@
-; hello-os
+; haribote-ipl
 ; TAB=4
 
-		ORG		0x7c00			; このプログラムがどこに読み込まれるのか
+		ORG		0x7c00			; where the program load from
 
-; 以下は標準的なFAT12フォーマットフロッピーディスクのための記述
+; FAT12 system
 
 		JMP		entry
 		DB		0x90
-		DB		"HELLOIPL"		; ブートセクタの名前を自由に書いてよい（8バイト）
+		DB		"HARIBOTE"		; ブートセクタの名前を自由に書いてよい（8バイト）
 		DW		512				; 1セクタの大きさ（512にしなければいけない）
 		DB		1				; クラスタの大きさ（1セクタにしなければいけない）
 		DW		1				; FATがどこから始まるか（普通は1セクタ目からにする）
@@ -22,39 +22,65 @@
 		DD		2880			; このドライブ大きさをもう一度書く
 		DB		0,0,0x29		; よくわからないけどこの値にしておくといいらしい
 		DD		0xffffffff		; たぶんボリュームシリアル番号
-		DB		"HELLO-OS   "	; ディスクの名前（11バイト）
+		DB		"HARIBOTEOS "	; ディスクの名前（11バイト）
 		DB		"FAT12   "		; フォーマットの名前（8バイト）
 		RESB	18				; とりあえず18バイトあけておく
 
-; プログラム本体
 
 entry:
 		MOV		AX,0			; レジスタ初期化
 		MOV		SS,AX
 		MOV		SP,0x7c00
 		MOV		DS,AX
-		MOV		ES,AX
 
+;read frist 516 B from drive A 
+
+		MOV		AX,0x0820
+		MOV		ES,AX			; ES:BX buffer address starts from this segment
+		MOV		CH,0			; cylinder 0
+		MOV		DH,0			; head 0
+		MOV		CL,2			; sector 2
+
+		MOV		SI,0			; retry start from 0
+
+retry:
+		MOV		AH,0x02			; AH=0x02 : read 
+		MOV		AL,1			; how many sectors to read
+		MOV		BX,0			; buffer addr start from 0x0820*16 + BX
+		MOV		DL,0x00			; driver A
+		INT		0x13			; call BIOS 13th method to read
+		JNC		fin			; jump if not carry
+
+		ADD		SI,1
+		CMP		SI,5			; read at most 5 times
+		JAE		error			; display error message
+
+		MOV		AH,0x00			; reset disk status
+		MOV		DL,0x00
+		INT		0x13
+		JMP		retry
+
+fin:
+		HLT
+		JMP		fin
+
+error:
 		MOV		SI,msg
 putloop:
-		MOV		AL,[SI]
-		ADD		SI,1			; SIに1を足す
+		MOV		AL,[SI]			; character code
+		ADD		SI,1
 		CMP		AL,0
 		JE		fin
-		MOV		AH,0x0e			; 一文字表示ファンクション
-		MOV		BX,15			; カラーコード
-		INT		0x10			; ビデオBIOS呼び出し
+		MOV		AH,0x0e			; function number = 0Eh : Display Character
+		MOV		BX,15			; color code
+		INT		0x10			; call INT 10h, BIOS video service
 		JMP		putloop
-fin:
-		HLT						; 何かあるまでCPUを停止させる
-		JMP		fin				; 無限ループ
-
 msg:
-		DB		0x0a, 0x0a		; 改行を2つ
-		DB		"hello, world"
-		DB		0x0a			; 改行
+		DB		0x0a, 0x0a
+		DB		"load error"
+		DB		0x0a
 		DB		0
 
-		RESB	0x7dfe-$		; 0x7dfeまでを0x00で埋める命令
+		RESB	0x7dfe-$		; fill with 0x00 until 0x7dfe
 
 		DB		0x55, 0xaa

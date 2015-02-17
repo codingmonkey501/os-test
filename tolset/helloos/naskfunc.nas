@@ -1,21 +1,14 @@
-; naskfunc
-; TAB=4
+;naskfunc
+[FORMAT "WCOFF"]        ; 制作目标文件的模式
+[BITS 32]            ; 制作32位模式用的机械语言
 
-[FORMAT "WCOFF"]				; 僆僽僕僃僋僩僼傽僀儖傪嶌傞儌乕僪	
-[BITS 32]						; 32價僢僩儌乕僪梡偺婡夿岅傪嶌傜偣傞
+; 制作目标文件的信息
 
+[FILE "naskfunc.nas"]        ; 源文件名信息
+    GLOBAL    _io_hlt        ; 程序中包含的函数名
 
-; 僆僽僕僃僋僩僼傽僀儖偺偨傔偺忣曬
-
-[FILE "naskfunc.nas"]			; 僜乕僗僼傽僀儖柤忣曬
-
-		GLOBAL	_io_hlt			; 偙偺僾儘僌儔儉偵娷傑傟傞娭悢柤
-
-
-; 埲壓偼幚嵺偺娭悢
-
-[SECTION .text]		; 僆僽僕僃僋僩僼傽僀儖偱偼偙傟傪彂偄偰偐傜僾儘僌儔儉傪彂偔
-
-_io_hlt:	; void io_hlt(void);
-		HLT
-		RET
+; 实际的函数
+[SECTION .text]    ;
+_io_hlt:    
+    HLT
+    RET

@@ -8,10 +8,6 @@ VMODE		EQU		0x0ff2			; color bits
 SCRNX		EQU		0x0ff4			; screen x
 SCRNY		EQU		0x0ff6			; screen y
 VRAM		EQU		0x0ff8			; screen image buffer start addr
-BOTPAK		EQU		0x00280000		; bootpack
-DSKCAC		EQU		0x00100000
-DSKCAC0		EQU		0x00008000
-
 
 		ORG		0xc200			; 0x8000 + 0x4200 program start memory addr
 

@@ -40,7 +40,7 @@ entry:
 		MOV		CH,0			; cylinder 0
 		MOV		DH,0			; head 0
 		MOV		CL,2			; sector 2
-
+readloop:
 		MOV		SI,0			; retry start from 0
 
 retry:
@@ -49,7 +49,7 @@ retry:
 		MOV		BX,0			; buffer addr start from 0x0820*16 + BX
 		MOV		DL,0x00			; driver A
 		INT		0x13			; call BIOS 13th method to read
-		JNC		fin			; jump if not carry
+		JNC		next			; read next sector
 
 		ADD		SI,1
 		CMP		SI,5			; read at most 5 times
@@ -59,6 +59,14 @@ retry:
 		MOV		DL,0x00
 		INT		0x13
 		JMP		retry
+
+next:							; read 18 sectors
+		MOV		AX,ES			
+		ADD		AX,0x0020		; 512 / 16
+		MOV		ES,AX
+		ADD		CL,1
+		CMP		CL,18
+		JBE		readloop		; jump below or equal
 
 fin:
 		HLT

@@ -1,6 +1,8 @@
 ; haribote-ipl
 ; TAB=4
 
+		CYLS	EQU	10			; define CYLS = 10
+
 		ORG		0x7c00			; where the program load from
 
 ; FAT12 system
@@ -60,13 +62,22 @@ retry:
 		INT		0x13
 		JMP		retry
 
-next:							; read 18 sectors
+next:							; read 17 sectors
 		MOV		AX,ES			
 		ADD		AX,0x0020		; 512 / 16
 		MOV		ES,AX
 		ADD		CL,1
 		CMP		CL,18
 		JBE		readloop		; jump below or equal
+
+		MOV		CL,1
+		ADD		DH,1
+		CMP		DH,2
+		JB		readloop
+		MOV		DH,0
+		ADD		CH,1
+		CMP		CH,CYLS
+		JB		readloop
 
 fin:
 		HLT
